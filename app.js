@@ -1,81 +1,34 @@
-const auth = "563492ad6f91700001000001a0104f06229b4474b30d171e43bef3e4"; //ADD THE AUTH KEY
-const gallery = document.querySelector(".gallery");
+import { curatedPhotos } from "./components/fetch.js";
+import { searchPhotos } from "./components/search.js";
+
 const searchInput = document.querySelector(".search-input");
 const form = document.querySelector(".search-form");
-let searchValue;
 const more = document.querySelector(".more");
-let page = 1;
-let fetchLink;
 let currentSearch;
+let searchValue;
+let currentPage = 2;
 
-//Event Listeners
+// Event Listener
+// For Searching - > 1. input runs updateInput Function making searchValue = What you typed in 2. form=search form , when submitted, the function runs and brings the searchValue into the searchPhotos section //
 searchInput.addEventListener("input", updateInput);
 form.addEventListener("submit", (e) => {
     e.preventDefault();
     currentSearch = searchValue;
     searchPhotos(searchValue);
 });
-more.addEventListener("click", loadMore);
-
 function updateInput(e) {
     searchValue = e.target.value;
 }
 
-async function fetchApi(url) {
-    const dataFetch = await fetch(url, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-            Authorization: auth,
-        },
-    });
-    const data = await dataFetch.json();
-    return data;
+more.addEventListener("click", nextPage);
+
+// Trouble Shoot this
+function nextPage() {
+    let morepages = currentPage++;
+    console.log(morepages)
+    curatedPhotos(morepages);
 }
 
-function generatePictures(data) {
-    data.photos.forEach((photo) => {
-        const galleryImg = document.createElement("div");
-        galleryImg.classList.add("gallery-img");
-        galleryImg.innerHTML = `
-            <div class="gallery-info">
-            <p>${photo.photographer}</p>
-            <a href=${photo.src.original}>Download</a>
-            </div>
-            <img src=${photo.src.large}></img>
-            `;
-        gallery.appendChild(galleryImg);
-    });
-}
-
-async function curatedPhotos() {
-    fetchLink = "https://api.pexels.com/v1/curated?per_page=15&page=1";
-    const data = await fetchApi(fetchLink);
-
-    generatePictures(data);
-}
-
-async function searchPhotos(query) {
-    clear();
-    fetchLink = `https://api.pexels.com/v1/search?query=${query}+query&per_page=15&page=1`;
-    const data = await fetchApi(fetchLink);
-    generatePictures(data);
-}
-
-function clear() {
-    gallery.innerHTML = "";
-    searchInput.value = "";
-}
-
-async function loadMore() {
-    page++;
-    if (currentSearch) {
-        fetchLink = `https://api.pexels.com/v1/search?query=${currentSearch}+query&per_page=15&page=${page}`;
-    } else {
-        fetchLink = `https://api.pexels.com/v1/curated?per_page=15&page=${page}`;
-    }
-    const data = await fetchApi(fetchLink);
-    generatePictures(data);
-}
-
+// Functions
+searchPhotos();
 curatedPhotos();
